@@ -42,7 +42,7 @@ Resources:
         - FromPort: 8080
           IpProtocol: "tcp"
           ToPort: 8080
-           CidrIp: 0.0.0.0/0  # Consider restricting this to specific IPs
+          CidrIp: 0.0.0.0/0  # Consider restricting this to specific IPs
       Tags: 
         - Key: Name
           Value: "Chris-romanNumeral-SecGroup"
@@ -77,4 +77,4 @@ Outputs:
     Description: It gives PublicIP
     Value: !Sub 
       - http://${PIA}:80
-      - PIA: !GetAtt WebServerHost.PublicDnsName
+      - PIA: !GetAtt WebServerHost.PublicIp
