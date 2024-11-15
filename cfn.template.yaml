@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  CloudFormation Template for Roman Numerals Converter Application. 
+  This template creates a Python Flask Web Application on an Amazon Linux 2023  
+  EC2 Instance with a custom security group allowing HTTP connections on ports 80 and 8080, 
+  and SSH connections on port 22. 
+  The Roman Numerals Converter Application is downloaded from a GitHub repository and installed on Flask.
+
+Parameters:
+  InstanceType:
+    Description: Select your instance type.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+      - t2.nano
+
+  KeyName:
+    Description: EC2 key pair name
+    Type: AWS::EC2::KeyPair::KeyName
+  
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-default-x86_64'
+
+Resources:
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for Roman Numerals Converter App" 
+      SecurityGroupIngress: 
+        - FromPort: 80
+          IpProtocol: "tcp"
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # Consider restricting this to specific IPs
+
+        - FromPort: 22
+          IpProtocol: "tcp"
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Consider restricting this to specific IPs
+
+        - FromPort: 8080
+          IpProtocol: "tcp"
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0  # Consider restricting this to specific IPs
+      Tags: 
+        - Key: Name
+          Value: "RomanNumeralApp-SecGroup"
+
+  WebServerHost:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroupIds: 
+        - !Ref WebServerSecurityGroup
+      UserData: !Base64 |
+        #!/bin/bash
+        set -e  # Exit immediately if a command exits with a non-zero status
+        dnf update -y
+        dnf install -y wget python3 python3-pip git
+        pip3 install flask
+        
+        # Create application directory
+        APP_DIR="/home/ec2-user/roman_numerals_converter"
+        mkdir -p $APP_DIR
+        cd $APP_DIR
+        
+        # Download application files
+        FOLDER="https://raw.githubusercontent.com/aredo01/Project-001-roman-numerals-converter/refs/heads/main/"
+        wget -P templates ${FOLDER}/templates/index.html
+        wget -P templates ${FOLDER}/templates/result.html
+        wget ${FOLDER}/app.py
+        
+        # Run the application
+        python3 app.py &
+
+      Tags: 
+        - Key: Name
+          Value: "RomanNumeralApp-EC2"
+
+Outputs:
+  WebSiteURL:
+    Description: Public IP of the Web Server
+    Value: !Sub 
+      - http://${PublicIP}:80
+      - PublicIP: !GetAtt WebServerHost.PublicIp
