@@ -7,6 +7,7 @@ Description:
   EC2 Instance with a custom security group allowing HTTP connections on port 80, 8080, and SSH connection on port 22.
 
 Parameters:
+
   InstanceType:
     Description: Select your instance type.
     Type: String
@@ -52,7 +53,7 @@ Resources:
       KeyName: !Ref KeyName
       SecurityGroupIds:
         - !Ref WebServerSecurityGroup
-      UserData: !Base64
+      UserData: 
         Fn::Base64: 
             !Sub |
               #!/bin/bash
@@ -69,9 +70,9 @@ Resources:
               wget -P templates ${FOLDER}templates/result.html
               wget ${FOLDER}app.py
               python3 app.py
-              Tags:
-                - Key: Name
-                  Value: chris-RomanNumeral-ec2
+      Tags:
+          - Key: Name
+            Value: chris-RomanNumeral-ec2
 
 Outputs:
   WebSiteURL:
