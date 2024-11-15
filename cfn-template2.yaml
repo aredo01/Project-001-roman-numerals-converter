@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: >
+Description: 
   CloudFormation Template for Roman Numerals Converter Application. 
 
   This template creates a Python Flask Web Application on an Amazon Linux 2023  
@@ -52,26 +52,26 @@ Resources:
       KeyName: !Ref KeyName
       SecurityGroupIds:
         - !Ref WebServerSecurityGroup
-      UserData: 
+      UserData: !Base64
         Fn::Base64: 
-          !Sub |
-            #!/bin/bash
-            dnf update -y
-            dnf install wget -y
-            dnf install python3 -y
-            dnf install python3-pip -y
-            pip3 install flask
-            dnf install git -y
-            cd /home/ec2-user
-            FOLDER="https://raw.githubusercontent.com/aredo01/Project-001-roman-numerals-converter/refs/heads/main/"
-            mkdir templates
-            wget -P templates ${FOLDER}templates/index.html
-            wget -P templates ${FOLDER}templates/result.html
-            wget ${FOLDER}app.py
-            python3 app.py
-      Tags:
-        - Key: Name
-          Value: chris-RomanNumeral-ec2
+            !Sub |
+              #!/bin/bash
+              dnf update -y
+              yum install wget -y
+              dnf install python3 -y
+              dnf install python3-pip -y
+              pip3 install flask
+              dnf install git -y
+              cd /home/ec2-user
+              FOLDER="https://raw.githubusercontent.com/aredo01/Project-001-roman-numerals-converter/main/"
+              mkdir -p templates
+              wget -P templates ${FOLDER}templates/index.html
+              wget -P templates ${FOLDER}templates/result.html
+              wget ${FOLDER}app.py
+              python3 app.py
+              Tags:
+                - Key: Name
+                  Value: chris-RomanNumeral-ec2
 
 Outputs:
   WebSiteURL:
